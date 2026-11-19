@@ -1,6 +1,7 @@
 # Copyright 2024 Dixmit
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
 
+from odoo.exceptions import AccessError
 from odoo.tests.common import users
 from odoo.tools import mute_logger
 
@@ -91,3 +92,33 @@ class TestAutomationSecurity(AutomationTestCase):
         self.assertTrue(record.is_orphan_record)
         self.assertTrue(original_record)
         self.assertTrue(original_record.read())
+
+    @users("user_automation_01")
+    def test_security_record_without_res_id(self):
+        """A record without res_id has no document to check: only managers see it."""
+        record = self.env["automation.record"].sudo().search(
+            [("configuration_id", "=", self.configuration.id)], limit=1
+        )
+        record.write({"res_id": False})
+        with self.assertRaises(AccessError):
+            record.with_user(self.env.user).read(["name"])
+        self.env.user.group_ids = [
+            (4, self.env.ref("automation_oca.group_automation_manager").id)
+        ]
+        self.env.invalidate_all()
+        self.assertTrue(record.with_user(self.env.user).read(["model"]))
+
+    @users("user_automation_01")
+    def test_security_search_record_without_model(self):
+        """A record with no document at all is listed only for managers."""
+        record = self.env["automation.record"].sudo().search(
+            [("configuration_id", "=", self.configuration.id)], limit=1
+        )
+        record.write({"model": False, "res_id": False})
+        domain = [("id", "=", record.id)]
+        self.assertFalse(self.env["automation.record"].search(domain))
+        self.env.user.group_ids = [
+            (4, self.env.ref("automation_oca.group_automation_manager").id)
+        ]
+        self.env.invalidate_all()
+        self.assertTrue(self.env["automation.record"].search(domain))

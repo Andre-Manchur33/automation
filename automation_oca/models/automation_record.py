@@ -124,7 +124,9 @@ class AutomationRecord(models.Model):
             )
             for eid, res_id, model in self.env.cr.fetchall():
                 if not model:
-                    result.append(eid)
+                    # No document at all: only managers and system admins see it.
+                    if self._sees_records_without_document():
+                        result.append(eid)
                     continue
                 model_data[model][res_id].add(eid)
 
@@ -186,12 +188,25 @@ class AutomationRecord(models.Model):
         self.check_access("read")
         return super().read(fields=fields, load=load)
 
+    def _sees_records_without_document(self):
+        return self.env.is_system() or self.env.user.has_group(
+            "automation_oca.group_automation_manager"
+        )
+
     def check_access(self, operation):
         """In order to check if we can access a record, we are checking if we can access
         the related document"""
         super().check_access(operation)
         if self.env.is_superuser():
             return
+        # A record without res_id (orphan: its document was deleted) has no document
+        # to check access against: only automation managers and system admins see it.
+        if self.sudo().filtered(
+            lambda rec: not rec.res_id
+        ) and not self._sees_records_without_document():
+            raise AccessError(
+                self.env._("Only automation managers can access records without a document.")
+            )
         default_checker = self.env["mail.thread"].get_automation_access
         by_model_rec_ids = defaultdict(set)
         by_model_checker = {}

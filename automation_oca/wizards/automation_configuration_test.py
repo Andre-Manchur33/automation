@@ -39,4 +39,4 @@ class AutomationConfigurationTest(models.TransientModel):
     def test_record(self):
         return self.configuration_id._create_record(
             self.resource_ref, is_test=True
-        ).get_formview_action()
+        ).get_record_default_action()

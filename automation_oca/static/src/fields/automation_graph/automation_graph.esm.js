@@ -1,25 +1,19 @@
-/* global Chart*/
-
-import {Component, onWillStart, useEffect, useRef} from "@odoo/owl";
+import {Component, useProps} from "@odoo/owl";
 import {_t} from "@web/core/l10n/translation";
-import {loadJS} from "@web/core/assets";
 import {registry} from "@web/core/registry";
 import {standardFieldProps} from "@web/views/fields/standard_field_props";
+import {useChart} from "@web/core/utils/chart_hook";
 
 export class AutomationGraph extends Component {
+    static template = "automation_oca.AutomationGraph";
+    props = useProps({...standardFieldProps});
+
     setup() {
-        this.chart = null;
-        this.canvasRef = useRef("canvas");
-        onWillStart(() => loadJS("/web/static/lib/Chart/Chart.js"));
-        useEffect(() => {
-            this.renderChart();
-            return () => {
-                if (this.chart) {
-                    this.chart.destroy();
-                }
-            };
-        });
+        // Odoo 20: the chart.js bundle loading and the chart life cycle are
+        // handled by the core hook; the canvas takes ``this.chart.ref``.
+        this.chart = useChart(() => this._getChartConfig());
     }
+
     _getChartConfig() {
         return {
             type: "line",
@@ -80,19 +74,7 @@ export class AutomationGraph extends Component {
             },
         };
     }
-    renderChart() {
-        if (this.chart) {
-            this.chart.destroy();
-        }
-        var config = this._getChartConfig();
-        this.chart = new Chart(this.canvasRef.el, config);
-    }
 }
-
-AutomationGraph.template = "automation_oca.AutomationGraph";
-AutomationGraph.props = {
-    ...standardFieldProps,
-};
 
 export const AutomationGraphField = {component: AutomationGraph};
 registry.category("fields").add("automation_graph", AutomationGraphField);

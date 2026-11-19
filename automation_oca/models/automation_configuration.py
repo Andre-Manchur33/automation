@@ -67,7 +67,7 @@ class AutomationConfiguration(models.Model):
         string="Model ID",
     )
     filter_id = fields.Many2one("automation.filter")
-    filter_domain = fields.Binary(compute="_compute_filter_domain")
+    filter_domain = fields.Json(compute="_compute_filter_domain")
     model = fields.Char(string="Model", related="model_id.model")
     field_id = fields.Many2one(
         "ir.model.fields",
@@ -259,7 +259,7 @@ class AutomationConfiguration(models.Model):
             "({rhs}.is_test IS NULL OR NOT {rhs}.is_test)",
             [Record._name, self.id],
         )
-        query.add_where(f"{alias}.id is NULL")
+        query.add_where(SQL("%s IS NULL", SQL.identifier(alias, "id")))
         if self.field_id:
             # In case of unicity field defined, we need to add this
             # left join to find already created records
@@ -284,7 +284,7 @@ class AutomationConfiguration(models.Model):
                 "({rhs}.is_test IS NULL OR NOT {rhs}.is_test)",
                 [Record._name, self.id],
             )
-            query.add_where(f"{alias2}.id is NULL")
+            query.add_where(SQL("%s IS NULL", SQL.identifier(alias2, "id")))
             query.groupby = SQL.identifier(Record._table, self.field_id.name)
             sql = query.select(SQL("MIN(%s)", SQL.identifier(Record._table, "id")))
         else:
@@ -401,7 +401,7 @@ class AutomationConfiguration(models.Model):
 
     def create_document_from_attachment(self, b64_data):
         data = json.loads(base64.b64decode(b64_data))
-        return self._create_document_from_data(data).get_formview_action()
+        return self._create_document_from_data(data).get_record_default_action()
 
     def _create_document_from_data(self, data):
         record = self.create(self._create_document_from_data_vals(data))
@@ -472,15 +472,14 @@ class AutomationConfiguration(models.Model):
             "icon": activity_data.get("icon", "fa-clock"),
             "decoration_type": activity_data.get("decoration_type"),
             "res_model": activity_data.get("res_model"),
-            "triggered_next_type_id": activity_data.get("triggered_next_type_id")
+            "suggested_next_type_id": activity_data.get("suggested_next_type_id")
             and (
                 self.env.ref(
-                    activity_data["triggered_next_type_id"], raise_if_not_found=False
+                    activity_data["suggested_next_type_id"], raise_if_not_found=False
                 )
                 or self.env["mail.activity.type"]
             ).id
             or False,
-            "chaining_type": activity_data.get("chaining_type"),
             "category": activity_data.get("category"),
             "default_note": activity_data.get("default_note"),
         }

@@ -658,10 +658,9 @@ class AutomationConfigurationStep(models.Model):
             "icon": activity_type.icon,
             "decoration_type": activity_type.decoration_type,
             "res_model": activity_type.res_model,
-            "triggered_next_type_id": self.configuration_id._get_external_xmlid(
-                activity_type.triggered_next_type_id
+            "suggested_next_type_id": self.configuration_id._get_external_xmlid(
+                activity_type.suggested_next_type_id
             ),
-            "chaining_type": activity_type.chaining_type,
             "category": activity_type.category,
             "default_note": activity_type.default_note,
         }

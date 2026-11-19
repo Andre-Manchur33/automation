@@ -131,7 +131,7 @@
                                                         t-att-class="record.trigger_type_data.raw_value.icon"
                                                     />
                                                     <t
-                                                        t-esc="record.trigger_type_data.raw_value.message"
+                                                        t-out="record.trigger_type_data.raw_value.message"
                                                     />
                                                 </span>
                                             </strong>
@@ -161,7 +161,7 @@
                                                         <field name="name" />
                                                     </a>
                                                 </h3>
-                                                <div t-esc="record.step_type.value" />
+                                                <div t-out="record.step_type.value" />
                                             </div>
                                             <div
                                                 class="o_automation_kanban_header_actions"
@@ -207,7 +207,7 @@
                                                         role="img"
                                                         t-att-aria-label="state.name"
                                                     />
-                                                    <t t-esc="state.name" />
+                                                    <t t-out="state.name" />
                                                 </div>
                                             </t>
                                         </div>

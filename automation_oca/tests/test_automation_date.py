@@ -24,6 +24,9 @@ class TestAutomationDate(AutomationTestCase):
             MetaModel._module_to_models__[ResPartner._module].remove(ResPartner)
 
         cls.addClassCleanup(_restore)
+        # Pending tracking jobs must run before the registry gets a new column
+        cls.env.flush_all()
+        cls.env.cr.precommit.run()
         cls.env.invalidate_all()
         add_to_registry(cls.registry, ResPartner)
         cls.registry._setup_models__(cls.env.cr, ["res.partner"])

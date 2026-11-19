@@ -1,4 +1,4 @@
-import {Component} from "@odoo/owl";
+import {Component, t, useProps} from "@odoo/owl";
 import {FileUploader} from "@web/views/fields/file_handler";
 import {KanbanController} from "@web/views/kanban/kanban_controller";
 import {kanbanView} from "@web/views/kanban/kanban_view";
@@ -7,11 +7,21 @@ import {standardWidgetProps} from "@web/views/widgets/standard_widget_props";
 import {useService} from "@web/core/utils/hooks";
 
 export class AutomationFileUploader extends Component {
+    static template = "automation_oca.AutomationFileUploader";
+    static components = {FileUploader};
+    props = useProps({
+        ...standardWidgetProps,
+        record: t.object().optional(),
+        acceptedFileExtensions: t.string().optional(".json"),
+        togglerTemplate: t.string().optional(),
+    });
+
     setup() {
         this.orm = useService("orm");
         this.action = useService("action");
         this.notification = useService("notification");
     }
+
     async onFileUploaded(file) {
         const action = await this.orm.call(
             "automation.configuration",
@@ -32,19 +42,6 @@ export class AutomationFileUploader extends Component {
         this.action.doAction(action);
     }
 }
-AutomationFileUploader.components = {
-    FileUploader,
-};
-AutomationFileUploader.template = "automation_oca.AutomationFileUploader";
-AutomationFileUploader.props = {
-    ...standardWidgetProps,
-    record: {type: Object, optional: true},
-    slots: {type: Object, optional: true},
-    acceptedFileExtensions: {type: String, optional: true},
-};
-AutomationFileUploader.defaultProps = {
-    acceptedFileExtensions: ".json",
-};
 
 export const automationFileUploader = {
     component: AutomationFileUploader,
@@ -54,11 +51,12 @@ registry
     .category("view_widgets")
     .add("automation_oca_file_uploader", automationFileUploader);
 
-export class AutomationKanbanController extends KanbanController {}
-AutomationKanbanController.components = {
-    ...KanbanController.components,
-    AutomationFileUploader,
-};
+export class AutomationKanbanController extends KanbanController {
+    static components = {
+        ...KanbanController.components,
+        AutomationFileUploader,
+    };
+}
 
 export const AutomationKanbanView = {
     ...kanbanView,

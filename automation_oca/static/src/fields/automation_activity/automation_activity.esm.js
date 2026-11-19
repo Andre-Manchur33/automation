@@ -3,7 +3,7 @@ import {useOpenX2ManyRecord, useX2ManyCrud} from "@web/views/fields/relational_u
 import {AutomationKanbanCompiler} from "../../views/automation_kanban/automation_kanban_compiler.esm";
 import {AutomationKanbanRenderer} from "../../views/automation_kanban/automation_kanban_renderer.esm";
 import {registry} from "@web/core/registry";
-import {useSubEnv} from "@odoo/owl";
+import {useSubEnv} from "@web/owl2/utils";
 
 export class AutomationActivity extends X2ManyField {
     setup() {

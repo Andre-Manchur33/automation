@@ -14,7 +14,7 @@ class TestAutomationSecurity(AutomationTestCase):
     def setUpClass(cls):
         super().setUpClass()
         # Removing rules in order to check only what we expect
-        cls.env["ir.rule"].search(
+        cls.env["ir.access"].search(
             [("model_id", "=", cls.env.ref("base.model_res_partner").id)]
         ).action_archive()
 
@@ -36,40 +36,24 @@ class TestAutomationSecurity(AutomationTestCase):
             notification_type="inbox",
             groups="base.group_user,automation_oca.group_automation_user",
         )
-        cls.group_1 = cls.env["res.groups"].create(
-            {
-                "name": "G1",
-                "user_ids": [(4, cls.user_automation_01.id)],
-                "rule_groups": [
-                    (
-                        0,
-                        0,
-                        {
-                            "name": "Rule 01",
-                            "model_id": cls.env.ref("base.model_res_partner").id,
-                            "domain_force": f"[('id', '!=', {cls.partner_01.id})]",
-                        },
-                    )
-                ],
-            }
-        )
-        cls.group_2 = cls.env["res.groups"].create(
-            {
-                "name": "G2",
-                "user_ids": [(4, cls.user_automation_02.id)],
-                "rule_groups": [
-                    (
-                        0,
-                        0,
-                        {
-                            "name": "Rule 01",
-                            "model_id": cls.env.ref("base.model_res_partner").id,
-                            "domain_force": f"[('id', '!=', {cls.partner_02.id})]",
-                        },
-                    )
-                ],
-            }
-        )
+        for number, user, partner in (
+            ("G1", cls.user_automation_01, cls.partner_01),
+            ("G2", cls.user_automation_02, cls.partner_02),
+        ):
+            group = cls.env["res.groups"].create(
+                {"name": number, "user_ids": [(4, user.id)]}
+            )
+            # In Odoo 20 the group rules are ir.access records with a domain
+            cls.env["ir.access"].create(
+                {
+                    "name": f"Rule {number}",
+                    "model_id": cls.env.ref("base.model_res_partner").id,
+                    "group_id": group.id,
+                    "operation": "crud",
+                    "domain": f"[('id', '!=', {partner.id})]",
+                }
+            )
+            setattr(cls, f"group_{number[1]}", group)
         cls.configuration.editable_domain = [
             ("id", "in", (cls.partner_01 | cls.partner_02).ids)
         ]

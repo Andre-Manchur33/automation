@@ -1,6 +1,7 @@
-import {KanbanCompiler} from "@web/views/kanban/kanban_compiler";
+import {CardCompiler} from "@web/views/card/card_compiler";
 
-export class AutomationKanbanCompiler extends KanbanCompiler {
+// Odoo 20: the kanban records are compiled by the shared card compiler
+export class AutomationKanbanCompiler extends CardCompiler {
     setup() {
         super.setup();
         this.compilers.push({
@@ -8,6 +9,7 @@ export class AutomationKanbanCompiler extends KanbanCompiler {
             fn: this.compileHierarchyAddButton,
         });
     }
+
     compileHierarchyAddButton(el) {
         el.setAttribute(
             "t-on-click",

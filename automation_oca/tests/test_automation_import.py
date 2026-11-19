@@ -40,7 +40,7 @@ class TestAutomationBase(AutomationTestCase):
     def test_export_automation(self):
         action = self.configuration.export_configuration()
         wizard = self.env[action["res_model"]].browse(action["res_id"])
-        file = wizard.file_content
+        file = wizard.file_content.to_base64()
         data = json.loads(base64.b64decode(file))
         action_id = self.action.get_external_id()[self.action.id]
         self.assertEqual(
@@ -59,7 +59,7 @@ class TestAutomationBase(AutomationTestCase):
     def test_import_automation_creation_copy(self):
         action = self.configuration.export_configuration()
         wizard = self.env[action["res_model"]].browse(action["res_id"])
-        file = wizard.file_content
+        file = wizard.file_content.to_base64()
         self.action.name = "Test Automation Configuration changed"
         record_action = self.env[
             "automation.configuration"
@@ -92,7 +92,7 @@ class TestAutomationBase(AutomationTestCase):
     def test_import_automation_creation_creation(self):
         action = self.configuration.export_configuration()
         wizard = self.env[action["res_model"]].browse(action["res_id"])
-        file = wizard.file_content
+        file = wizard.file_content.to_base64()
         self.configuration.automation_step_ids.unlink()
         original_action_id = self.action.id
         self.action.unlink()

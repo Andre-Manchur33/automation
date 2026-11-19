@@ -195,7 +195,7 @@ class AutomationRecord(models.Model):
         default_checker = self.env["mail.thread"].get_automation_access
         by_model_rec_ids = defaultdict(set)
         by_model_checker = {}
-        for exc_rec in self.sudo():
+        for exc_rec in self.sudo().filtered("res_id"):
             by_model_rec_ids[exc_rec.model].add(exc_rec.res_id)
             if exc_rec.model not in by_model_checker:
                 by_model_checker[exc_rec.model] = getattr(

@@ -609,7 +609,7 @@ class TestAutomationBase(AutomationTestCase):
             email="user_automation@test.example.com",
             company_id=self.env.user.company_id.id,
             notification_type="inbox",
-            groups="base.user_admin, automation_oca.group_automation_manager",
+            groups="base.group_user, automation_oca.group_automation_manager",
         )
         self.configuration.editable_domain = (
             f"['|', ('id', '=', {self.partner_01.id}),"
